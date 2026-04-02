@@ -42,4 +42,92 @@ function require_role($roles = [])
         exit;
     }
 }
-?>
+
+/**
+ * Format tanggal ke format Indonesia.
+ * Contoh output: "Jumat, 03 April 2026"
+ */
+function formatTanggalIndonesia(string $tanggal): string
+{
+    static $hariMap = [
+        'Sunday'    => 'Minggu',
+        'Monday'    => 'Senin',
+        'Tuesday'   => 'Selasa',
+        'Wednesday' => 'Rabu',
+        'Thursday'  => 'Kamis',
+        'Friday'    => 'Jumat',
+        'Saturday'  => 'Sabtu',
+    ];
+
+    static $bulanMap = [
+        'January'   => 'Januari',
+        'February'  => 'Februari',
+        'March'     => 'Maret',
+        'April'     => 'April',
+        'May'       => 'Mei',
+        'June'      => 'Juni',
+        'July'      => 'Juli',
+        'August'    => 'Agustus',
+        'September' => 'September',
+        'October'   => 'Oktober',
+        'November'  => 'November',
+        'December'  => 'Desember',
+    ];
+
+    $hasil = date('l, d F Y', strtotime($tanggal));
+    $hasil = strtr($hasil, $hariMap);
+    $hasil = strtr($hasil, $bulanMap);
+
+    return $hasil;
+}
+
+/**
+ * Kembalikan nama hari dalam Bahasa Indonesia dari sebuah tanggal.
+ * Contoh output: "Jumat"
+ */
+function hariIndonesia(string $tanggal): string
+{
+    static $map = [
+        'Sunday'    => 'Minggu',
+        'Monday'    => 'Senin',
+        'Tuesday'   => 'Selasa',
+        'Wednesday' => 'Rabu',
+        'Thursday'  => 'Kamis',
+        'Friday'    => 'Jumat',
+        'Saturday'  => 'Sabtu',
+    ];
+
+    return $map[date('l', strtotime($tanggal))] ?? '';
+}
+
+/**
+ * Ambil guru_id berdasarkan user_id dari session.
+ * Hasil di-cache ke $_SESSION['guru_id'] agar tidak query berulang.
+ *
+ * @param  mysqli $conn  Koneksi database aktif.
+ * @return int|null      guru_id jika ditemukan, null jika tidak.
+ */
+function getGuruId(mysqli $conn): ?int
+{
+    if (!empty($_SESSION['guru_id'])) {
+        return (int) $_SESSION['guru_id'];
+    }
+
+    $userId = (int) ($_SESSION['user_id'] ?? 0);
+    if ($userId === 0) {
+        return null;
+    }
+
+    $stmt = $conn->prepare("SELECT id FROM guru WHERE user_id = ? LIMIT 1");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    if ($row) {
+        $_SESSION['guru_id'] = (int) $row['id'];
+        return (int) $row['id'];
+    }
+
+    return null;
+}
