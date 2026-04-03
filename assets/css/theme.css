@@ -2276,3 +2276,114 @@ canvas#guruChart{
         font-size:18px;
     }
 }
+
+/* ===== DASHBOARD GURU — FILTER KELAS CHART ===== */
+.guru-kelas-filter-wrap{
+    position:relative;
+}
+
+.guru-kelas-select{
+    height:38px;
+    min-width:160px;
+    max-width:220px;
+    border:1.5px solid #e0deff;
+    border-radius:10px;
+    background:#f8f7ff;
+    color:#5b4cf0;
+    font-weight:700;
+    font-size:13px;
+    padding:0 12px;
+    cursor:pointer;
+    appearance:none;
+    -webkit-appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235b4cf0' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat:no-repeat;
+    background-position:right 10px center;
+    padding-right:30px;
+}
+
+.guru-kelas-select:focus{
+    outline:none;
+    border-color:#5b4cf0;
+    box-shadow:0 0 0 3px rgba(91,76,240,.12);
+}
+
+@media (max-width: 576px){
+    .guru-kelas-select{
+        min-width:0;
+        width:100%;
+        max-width:none;
+    }
+}
+
+/* ===== RAPIIKAN ALIGN TABLE MONITORING ===== */
+.monitoring-table th,
+.monitoring-table td{
+    vertical-align: middle;
+}
+
+/* default: semua kolom center */
+.monitoring-table th,
+.monitoring-table td{
+    text-align: center;
+}
+
+/* kolom siswa tetap rata kiri */
+.monitoring-table th:nth-child(2),
+.monitoring-table td:nth-child(2){
+    text-align: left;
+}
+
+/* form status biar benar-benar di tengah */
+.status-update-form{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+}
+
+/* select status lebih rapi */
+.status-select{
+    min-width: 170px;
+    text-align: center;
+    text-align-last: center;
+}
+
+/* pill keterangan biar simetris */
+.monitoring-table td .status-pill{
+    min-width: 150px;
+    text-align: center;
+}
+
+/* angka NO lebih pas */
+.monitoring-table th:nth-child(1),
+.monitoring-table td:nth-child(1){
+    width: 70px;
+}
+
+/* kolom jam lebih proporsional */
+.monitoring-table th:nth-child(3),
+.monitoring-table td:nth-child(3),
+.monitoring-table th:nth-child(4),
+.monitoring-table td:nth-child(4){
+    width: 130px;
+}
+
+/* kolom keterangan dan status biar stabil */
+.monitoring-table th:nth-child(5),
+.monitoring-table td:nth-child(5),
+.monitoring-table th:nth-child(6),
+.monitoring-table td:nth-child(6){
+    width: 220px;
+}
+
+.monitoring-table td:nth-child(2) strong{
+    display: inline-block;
+    margin-bottom: 4px;
+    line-height: 1.3;
+}
+
+.monitoring-nisn{
+    display: inline-block;
+    line-height: 1.3;
+}
