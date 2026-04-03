@@ -58,7 +58,7 @@ $inisial = strtoupper(substr($nama, 0, 1));
                     <i class="fa-solid fa-house"></i>
                     <span>Dashboard</span>
                 </a>
-                <a href="<?= BASE_URL; ?>/guru/monitoring.php" class="<?= menuActive('/guru/monitoring.php'); ?>">
+                <a href="<?= BASE_URL; ?>/guru/monitoring.php" class="<?= (menuActive('/guru/monitoring.php') || menuActive('/guru/monitoring_kelas.php')) ? 'active' : ''; ?>">
                     <i class="fa-solid fa-eye"></i>
                     <span>Monitoring</span>
                 </a>

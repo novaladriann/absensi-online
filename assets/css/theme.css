@@ -1870,3 +1870,409 @@ canvas#guruChart{
         min-width:110px;
     }
 }
+/* ===== MONITORING — ATURAN EDIT ABSENSI ===== */
+
+/* Info window jam pengajar di header tabel */
+.monitoring-window-info{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:13px;
+    color:#7f879c;
+    background:#f8f9fd;
+    border:1px solid #eceef5;
+    border-radius:12px;
+    padding:8px 14px;
+    white-space:nowrap;
+}
+
+.monitoring-window-info i{
+    color:#9aa1b5;
+}
+
+.window-badge{
+    padding:3px 10px;
+    border-radius:8px;
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:.4px;
+    text-transform:uppercase;
+}
+
+.window-open{
+    background:#dcf8e8;
+    color:#158b57;
+}
+
+.window-closed{
+    background:#ffe5e7;
+    color:#d7474b;
+}
+
+/* Badge "WK" (wali kelas) di kolom kelas */
+.role-badge-wali{
+    display:inline-block;
+    margin-left:6px;
+    background:#efedff;
+    color:#5b4cf0;
+    font-size:10px;
+    font-weight:800;
+    padding:2px 7px;
+    border-radius:6px;
+    letter-spacing:.4px;
+    vertical-align:middle;
+}
+
+/* Status terkunci (pengajar, bukan hari ini) */
+.status-locked-wrap{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+}
+
+.status-locked-pill{
+    background:#f3f4f9;
+    color:#9aa1b5;
+    cursor:default;
+}
+
+.status-muted{
+    background:#f3f4f9;
+    color:#9aa1b5;
+}
+
+.status-lock-icon{
+    color:#c5cad8;
+    font-size:12px;
+}
+
+/* ===== MODAL KONFIRMASI PERINGATAN ===== */
+.warn-modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(15,15,40,.45);
+    backdrop-filter:blur(3px);
+    z-index:2000;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+}
+
+.warn-modal-box{
+    background:#fff;
+    border-radius:24px;
+    padding:36px 32px 28px;
+    max-width:420px;
+    width:100%;
+    box-shadow:0 24px 60px rgba(15,15,40,.18);
+    text-align:center;
+    animation:warnPop .18s ease;
+}
+
+@keyframes warnPop{
+    from{ transform:scale(.94); opacity:0; }
+    to  { transform:scale(1);   opacity:1; }
+}
+
+.warn-modal-icon{
+    width:64px;
+    height:64px;
+    border-radius:50%;
+    background:#fff6e0;
+    color:#e6a817;
+    font-size:28px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin:0 auto 18px;
+}
+
+.warn-modal-title{
+    margin:0 0 12px;
+    font-size:20px;
+    font-weight:800;
+    color:#1f2430;
+}
+
+.warn-modal-body{
+    color:#586074;
+    font-size:14px;
+    line-height:1.7;
+    margin:0 0 26px;
+}
+
+.warn-modal-actions{
+    display:flex;
+    gap:12px;
+    justify-content:center;
+}
+
+.warn-btn-cancel{
+    flex:1;
+    height:46px;
+    border:1px solid #e0e3ed;
+    border-radius:12px;
+    background:#fff;
+    color:#586074;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+}
+
+.warn-btn-cancel:hover{
+    background:#f5f6fb;
+}
+
+.warn-btn-confirm{
+    flex:1;
+    height:46px;
+    border:none;
+    border-radius:12px;
+    background:linear-gradient(135deg,#f59e0b,#e6860a);
+    color:#fff;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+    box-shadow:0 8px 20px rgba(230,134,10,.25);
+}
+
+.warn-btn-confirm:hover{
+    background:linear-gradient(135deg,#e6a817,#d97b08);
+}
+
+@media (max-width: 480px){
+    .warn-modal-box{
+        padding:28px 20px 22px;
+    }
+
+    .warn-modal-actions{
+        flex-direction:column;
+    }
+
+    .monitoring-window-info{
+        font-size:12px;
+        padding:7px 10px;
+        flex-wrap:wrap;
+    }
+}
+
+/* ===== MONITORING — HALAMAN PILIH KELAS ===== */
+.mkelas-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));
+    gap:18px;
+}
+
+.mkelas-card{
+    background:#fff;
+    border-radius:20px;
+    padding:22px;
+    border:1.5px solid #eceef5;
+    box-shadow:var(--shadow);
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    text-decoration:none;
+    color:var(--text);
+    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    cursor:pointer;
+}
+
+.mkelas-card:hover{
+    transform:translateY(-3px);
+    box-shadow:0 16px 40px rgba(24,39,75,.12);
+    border-color:#c9c4f8;
+}
+
+.mkelas-card-wali{
+    border-color:#c9c4f8;
+    background:linear-gradient(160deg,#fdfcff 0%,#f5f3ff 100%);
+}
+
+.mkelas-card-wali:hover{
+    border-color:#9d8ff5;
+    box-shadow:0 16px 40px rgba(91,76,240,.14);
+}
+
+.mkelas-card-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+}
+
+.mkelas-badges{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    align-items:center;
+}
+
+.mkelas-role{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    padding:4px 10px;
+    border-radius:8px;
+    font-size:12px;
+    font-weight:700;
+}
+
+.mkelas-role-wali{
+    background:#efedff;
+    color:#5b4cf0;
+}
+
+.mkelas-role-pengajar{
+    background:#e9f2ff;
+    color:#2563eb;
+}
+
+.mkelas-total{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    font-size:12px;
+    font-weight:700;
+    color:#9aa1b5;
+    background:#f5f6fb;
+    padding:4px 10px;
+    border-radius:8px;
+}
+
+.mkelas-arrow-icon{
+    width:34px;
+    height:34px;
+    border-radius:10px;
+    background:#f5f6fb;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#9aa1b5;
+    font-size:13px;
+    flex-shrink:0;
+    transition:background .18s, color .18s;
+}
+
+.mkelas-card:hover .mkelas-arrow-icon{
+    background:#efedff;
+    color:#5b4cf0;
+}
+
+.mkelas-name{
+    font-size:22px;
+    font-weight:800;
+    color:#1f2430;
+    line-height:1.2;
+}
+
+/* Progress bar */
+.mkelas-progress-wrap{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.mkelas-progress-track{
+    flex:1;
+    height:8px;
+    background:#eceef5;
+    border-radius:999px;
+    overflow:hidden;
+}
+
+.mkelas-progress-fill{
+    height:100%;
+    border-radius:999px;
+    transition:width .4s ease;
+}
+
+.fill-green  { background:linear-gradient(90deg,#13a36b,#0d8f5e); }
+.fill-yellow { background:linear-gradient(90deg,#f4b400,#e6a200); }
+.fill-red    { background:linear-gradient(90deg,#ea5455,#d43d3e); }
+
+.mkelas-progress-pct{
+    font-size:12px;
+    font-weight:700;
+    color:#9aa1b5;
+    white-space:nowrap;
+}
+
+/* Statistik mini */
+.mkelas-stats-row{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:8px;
+    border-top:1px solid #eceef5;
+    padding-top:14px;
+}
+
+.mkelas-stat{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:4px;
+}
+
+.mkelas-stat-dot{
+    width:8px;
+    height:8px;
+    border-radius:50%;
+}
+
+.dot-green  { background:#13a36b; }
+.dot-yellow { background:#f4b400; }
+.dot-red    { background:#ea5455; }
+.dot-muted  { background:#c5cad8; }
+
+.mkelas-stat-num{
+    font-size:20px;
+    font-weight:800;
+    color:#1f2430;
+    line-height:1;
+}
+
+.mkelas-stat-lbl{
+    font-size:11px;
+    color:#9aa1b5;
+    font-weight:600;
+    text-align:center;
+}
+
+/* Tombol kembali di halaman detail */
+.mkelas-back-btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:34px;
+    height:34px;
+    border-radius:10px;
+    background:#f5f6fb;
+    color:#586074;
+    border:1px solid #eceef5;
+    text-decoration:none;
+    flex-shrink:0;
+    transition:background .15s, color .15s;
+}
+
+.mkelas-back-btn:hover{
+    background:#efedff;
+    color:#5b4cf0;
+}
+
+/* Sidebar update — tambah link monitoring_kelas agar tidak 404 saat active check */
+/* (tidak ada perubahan sidebar, active check sudah cover /guru/monitoring) */
+
+@media (max-width: 768px){
+    .mkelas-grid{
+        grid-template-columns:1fr;
+    }
+
+    .mkelas-name{
+        font-size:20px;
+    }
+
+    .mkelas-stat-num{
+        font-size:18px;
+    }
+}
