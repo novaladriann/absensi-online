@@ -796,13 +796,21 @@ a {
 }
 
 .alert-theme {
-  background: #ffe9ec;
-  color: #cc3f51;
   border: none;
   border-radius: 14px;
   padding: 14px 16px;
   margin-bottom: 16px;
   font-weight: 600;
+}
+
+.alert-success-theme {
+  background: #dcf8e8;
+  color: #158b57;
+}
+
+.alert-error-theme {
+  background: #ffe9ec;
+  color: #cc3f51;
 }
 
 @media (max-width: 1200px) {
@@ -818,14 +826,163 @@ a {
   .stats-grid {
     grid-template-columns: 1fr;
   }
-  .login-right {
-    padding: 34px 22px;
+}
+
+/* ===== LOGIN MOBILE RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .login-wrap {
+    padding: 20px 14px;
+    align-items: center;       /* card selalu di tengah vertikal */
+    min-height: 100dvh;        /* pakai dvh agar presisi di mobile browser */
   }
+
+  .login-card {
+    grid-template-columns: 1fr;
+    min-height: unset;
+    border-radius: 24px;
+    width: 100%;
+  }
+
+  /* Panel kiri → banner horizontal */
   .login-left {
-    padding: 28px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 16px 20px;
+    gap: 14px;
+    min-height: unset;
   }
+
+  .login-left > div:first-child {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .login-school {
+    font-size: 9px;
+    opacity: 0.78;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 3px;
+  }
+
   .login-big {
-    font-size: 48px;
+    font-size: 16px;
+    max-width: unset;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .login-desc {
+    display: none;
+  }
+
+  .login-badges {
+    flex-direction: column;
+    flex-shrink: 0;
+    gap: 5px;
+    margin-left: auto;
+  }
+
+  .login-badge {
+    font-size: 10px;
+    padding: 5px 10px;
+    text-align: center;
+    white-space: nowrap;
+    border-radius: 10px;
+  }
+
+  .login-right {
+    padding: 28px 24px;
+  }
+
+  .login-title {
+    font-size: 20px;
+  }
+
+  .input-icon input {
+    height: 54px;
+    font-size: 15px;
+  }
+
+  .login-btn {
+    height: 54px;
+    font-size: 16px;
+  }
+
+  .login-tab {
+    font-size: 14px;
+    padding: 12px 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-wrap {
+    padding: 14px 10px;
+  }
+
+  .login-card {
+    border-radius: 20px;
+  }
+
+  .login-left {
+    padding: 14px 16px;
+    gap: 10px;
+  }
+
+  .login-big {
+    font-size: 14px;
+  }
+
+  .login-school {
+    font-size: 8px;
+  }
+
+  .login-badge {
+    font-size: 9px;
+    padding: 4px 8px;
+  }
+
+  .login-right {
+    padding: 22px 18px;
+  }
+
+  .login-title {
+    font-size: 18px;
+  }
+
+  .login-sub {
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+
+  .login-tabs {
+    padding: 6px;
+    gap: 6px;
+    margin-bottom: 18px;
+  }
+
+  .login-tab {
+    font-size: 13px;
+    padding: 11px 6px;
+  }
+
+  .form-label {
+    font-size: 11px;
+  }
+
+  .input-icon input {
+    height: 50px;
+    font-size: 14px;
+  }
+
+  .login-btn {
+    height: 50px;
+    font-size: 15px;
   }
 }
 

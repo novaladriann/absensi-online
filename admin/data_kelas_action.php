@@ -239,11 +239,9 @@ try {
 
     jsonResponse(false, 'Action tidak dikenali.');
 } catch (Throwable $e) {
-    if ($conn->errno || $conn->connect_errno === 0) {
-        try {
-            $conn->rollback();
-        } catch (Throwable $rollbackError) {
-        }
+    try {
+        $conn->rollback();
+    } catch (Throwable $rollbackError) {
     }
 
     jsonResponse(false, 'Terjadi kesalahan: ' . $e->getMessage());

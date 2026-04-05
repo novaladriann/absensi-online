@@ -121,6 +121,7 @@ include '../includes/header.php';
 
         <h3 class="warn-modal-title" id="kelasModalTitle">Tambah Kelas</h3>
         <p class="warn-modal-body">Isi data kelas dan pilih wali kelas.</p>
+        <div id="kelasModalAlert" class="alert-theme" style="display:none; margin-bottom:14px;"></div>
 
         <form id="kelasForm" class="koreksi-form-inner">
             <input type="hidden" name="action" value="save_kelas">
@@ -157,6 +158,7 @@ include '../includes/header.php';
         <p class="warn-modal-body">
             Kelas: <strong id="pengajarModalKelasName">-</strong>
         </p>
+        <div id="pengajarModalAlert" class="alert-theme" style="display:none; margin-bottom:14px;"></div>
 
         <form id="pengajarForm" class="koreksi-form-inner">
             <input type="hidden" name="action" value="save_pengajar">
@@ -175,109 +177,137 @@ include '../includes/header.php';
 </div>
 
 <script>
-(function () {
-    const listUrl = '<?= BASE_URL; ?>/admin/data_kelas_list.php';
-    const actionUrl = '<?= BASE_URL; ?>/admin/data_kelas_action.php';
+    (function() {
+        const listUrl = '<?= BASE_URL; ?>/admin/data_kelas_list.php';
+        const actionUrl = '<?= BASE_URL; ?>/admin/data_kelas_action.php';
 
-    const kelasTableBody = document.getElementById('kelasTableBody');
-    const kelasCountText = document.getElementById('kelasCountText');
-    const kelasAlert = document.getElementById('kelasAlert');
-    const btnRefreshKelas = document.getElementById('btnRefreshKelas');
-    const btnTambahKelas = document.getElementById('btnTambahKelas');
-    const kelasSearchInput = document.getElementById('kelasSearchInput');
+        const kelasTableBody = document.getElementById('kelasTableBody');
+        const kelasCountText = document.getElementById('kelasCountText');
+        const kelasAlert = document.getElementById('kelasAlert');
+        const btnRefreshKelas = document.getElementById('btnRefreshKelas');
+        const btnTambahKelas = document.getElementById('btnTambahKelas');
+        const kelasSearchInput = document.getElementById('kelasSearchInput');
 
-    const statTotalKelas = document.getElementById('statTotalKelas');
-    const statSudahWali = document.getElementById('statSudahWali');
-    const statBelumWali = document.getElementById('statBelumWali');
-    const statTotalSiswa = document.getElementById('statTotalSiswa');
+        const statTotalKelas = document.getElementById('statTotalKelas');
+        const statSudahWali = document.getElementById('statSudahWali');
+        const statBelumWali = document.getElementById('statBelumWali');
+        const statTotalSiswa = document.getElementById('statTotalSiswa');
 
-    const kelasModal = document.getElementById('kelasModal');
-    const kelasModalTitle = document.getElementById('kelasModalTitle');
-    const kelasForm = document.getElementById('kelasForm');
-    const kelasIdInput = document.getElementById('kelasIdInput');
-    const namaKelasInput = document.getElementById('namaKelasInput');
-    const waliGuruSelect = document.getElementById('waliGuruSelect');
-    const kelasSubmitBtn = document.getElementById('kelasSubmitBtn');
+        const kelasModal = document.getElementById('kelasModal');
+        const kelasModalTitle = document.getElementById('kelasModalTitle');
+        const kelasForm = document.getElementById('kelasForm');
+        const kelasIdInput = document.getElementById('kelasIdInput');
+        const namaKelasInput = document.getElementById('namaKelasInput');
+        const waliGuruSelect = document.getElementById('waliGuruSelect');
+        const kelasSubmitBtn = document.getElementById('kelasSubmitBtn');
 
-    const pengajarModal = document.getElementById('pengajarModal');
-    const pengajarForm = document.getElementById('pengajarForm');
-    const pengajarKelasIdInput = document.getElementById('pengajarKelasIdInput');
-    const pengajarModalKelasName = document.getElementById('pengajarModalKelasName');
-    const guruChecklistWrap = document.getElementById('guruChecklistWrap');
-    const pengajarSubmitBtn = document.getElementById('pengajarSubmitBtn');
+        const kelasModalAlert = document.getElementById('kelasModalAlert');
+        const pengajarModalAlert = document.getElementById('pengajarModalAlert');
+        const pengajarModal = document.getElementById('pengajarModal');
+        const pengajarForm = document.getElementById('pengajarForm');
+        const pengajarKelasIdInput = document.getElementById('pengajarKelasIdInput');
+        const pengajarModalKelasName = document.getElementById('pengajarModalKelasName');
+        const guruChecklistWrap = document.getElementById('guruChecklistWrap');
+        const pengajarSubmitBtn = document.getElementById('pengajarSubmitBtn');
 
-    let kelasRows = [];
-    let guruOptions = [];
-    let searchTimer = null;
+        let kelasRows = [];
+        let guruOptions = [];
+        let searchTimer = null;
 
-    function escapeHtml(str) {
-        return String(str ?? '')
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
-    }
-
-    function showAlert(message, type = 'success') {
-        kelasAlert.style.display = 'block';
-        kelasAlert.className = 'alert-theme ' + (type === 'error' ? 'alert-error-theme' : '');
-        kelasAlert.innerHTML = escapeHtml(message);
-
-        clearTimeout(showAlert._timer);
-        showAlert._timer = setTimeout(() => {
-            kelasAlert.style.display = 'none';
-        }, 3000);
-    }
-
-    function setButtonLoading(btn, isLoading, textLoading = 'Menyimpan...') {
-        if (!btn) return;
-        if (isLoading) {
-            btn.dataset.originalHtml = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ' + textLoading;
-        } else {
-            btn.disabled = false;
-            btn.innerHTML = btn.dataset.originalHtml || 'Simpan';
-        }
-    }
-
-    function renderStats(summary) {
-        statTotalKelas.textContent = summary.total_kelas || 0;
-        statSudahWali.textContent = summary.sudah_ada_wali || 0;
-        statBelumWali.textContent = summary.belum_ada_wali || 0;
-        statTotalSiswa.textContent = summary.total_siswa || 0;
-    }
-
-    function renderWaliOptions(selectedId = '') {
-        let html = '<option value="">- Pilih Wali Kelas -</option>';
-        guruOptions.forEach(guru => {
-            const selected = String(selectedId) === String(guru.id) ? 'selected' : '';
-            const extra = guru.wali_di_kelas ? ' (Wali ' + guru.wali_di_kelas + ')' : '';
-            html += '<option value="' + guru.id + '" ' + selected + '>' +
-                escapeHtml(guru.nama) + extra + '</option>';
-        });
-        waliGuruSelect.innerHTML = html;
-    }
-
-    function renderGuruChecklist(selectedIds = [], waliId = '') {
-        const selectedSet = new Set((selectedIds || []).map(id => String(id)));
-        const currentWaliId = String(waliId || '');
-
-        if (!guruOptions.length) {
-            guruChecklistWrap.innerHTML = '<div class="empty-state-theme" style="padding:18px 12px;">Belum ada data guru.</div>';
-            return;
+        function escapeHtml(str) {
+            return String(str ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
         }
 
-        let html = '';
-        guruOptions.forEach(guru => {
-            const checked = selectedSet.has(String(guru.id)) ? 'checked' : '';
-            const disabled = currentWaliId && currentWaliId === String(guru.id) ? 'disabled' : '';
-            const note = currentWaliId && currentWaliId === String(guru.id)
-                ? '<span class="kelas-guru-note">Sedang dipakai sebagai wali kelas</span>'
-                : (guru.wali_di_kelas ? '<span class="kelas-guru-note">Wali ' + escapeHtml(guru.wali_di_kelas) + '</span>' : '');
+        function showAlert(message, type = 'success', target = 'page') {
+            let el = kelasAlert;
 
-            html += `
+            if (target === 'modal') {
+                el = kelasModalAlert;
+            } else if (target === 'pengajar-modal') {
+                el = pengajarModalAlert;
+            }
+
+            if (!el) return;
+
+            el.style.display = 'block';
+            el.className = 'alert-theme ' + (type === 'error' ? 'alert-error-theme' : 'alert-success-theme');
+            el.innerHTML = escapeHtml(message);
+
+            clearTimeout(el._timer);
+            el._timer = setTimeout(() => {
+                el.style.display = 'none';
+            }, 3500);
+        }
+
+        function hideKelasModalAlert() {
+            if (kelasModalAlert) {
+                kelasModalAlert.style.display = 'none';
+                kelasModalAlert.innerHTML = '';
+                kelasModalAlert.className = 'alert-theme';
+            }
+        }
+
+        function hidePengajarModalAlert() {
+            if (pengajarModalAlert) {
+                pengajarModalAlert.style.display = 'none';
+                pengajarModalAlert.innerHTML = '';
+                pengajarModalAlert.className = 'alert-theme';
+            }
+        }
+
+        function setButtonLoading(btn, isLoading, textLoading = 'Menyimpan...') {
+            if (!btn) return;
+            if (isLoading) {
+                btn.dataset.originalHtml = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ' + textLoading;
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = btn.dataset.originalHtml || 'Simpan';
+            }
+        }
+
+        function renderStats(summary) {
+            statTotalKelas.textContent = summary.total_kelas || 0;
+            statSudahWali.textContent = summary.sudah_ada_wali || 0;
+            statBelumWali.textContent = summary.belum_ada_wali || 0;
+            statTotalSiswa.textContent = summary.total_siswa || 0;
+        }
+
+        function renderWaliOptions(selectedId = '') {
+            let html = '<option value="">- Pilih Wali Kelas -</option>';
+            guruOptions.forEach(guru => {
+                const selected = String(selectedId) === String(guru.id) ? 'selected' : '';
+                const extra = guru.wali_di_kelas ? ' (Wali ' + guru.wali_di_kelas + ')' : '';
+                html += '<option value="' + guru.id + '" ' + selected + '>' +
+                    escapeHtml(guru.nama) + extra + '</option>';
+            });
+            waliGuruSelect.innerHTML = html;
+        }
+
+        function renderGuruChecklist(selectedIds = [], waliId = '') {
+            const selectedSet = new Set((selectedIds || []).map(id => String(id)));
+            const currentWaliId = String(waliId || '');
+
+            if (!guruOptions.length) {
+                guruChecklistWrap.innerHTML = '<div class="empty-state-theme" style="padding:18px 12px;">Belum ada data guru.</div>';
+                return;
+            }
+
+            let html = '';
+            guruOptions.forEach(guru => {
+                const checked = selectedSet.has(String(guru.id)) ? 'checked' : '';
+                const disabled = currentWaliId && currentWaliId === String(guru.id) ? 'disabled' : '';
+                const note = currentWaliId && currentWaliId === String(guru.id) ?
+                    '<span class="kelas-guru-note">Sedang dipakai sebagai wali kelas</span>' :
+                    (guru.wali_di_kelas ? '<span class="kelas-guru-note">Wali ' + escapeHtml(guru.wali_di_kelas) + '</span>' : '');
+
+                html += `
                 <label class="kelas-guru-item">
                     <div class="kelas-guru-main">
                         <input type="checkbox" name="guru_ids[]" value="${guru.id}" ${checked} ${disabled}>
@@ -289,31 +319,31 @@ include '../includes/header.php';
                     ${note}
                 </label>
             `;
-        });
+            });
 
-        guruChecklistWrap.innerHTML = html;
-    }
+            guruChecklistWrap.innerHTML = html;
+        }
 
-    function renderTable(rows) {
-        if (!rows.length) {
-            kelasTableBody.innerHTML = `
+        function renderTable(rows) {
+            if (!rows.length) {
+                kelasTableBody.innerHTML = `
                 <tr>
                     <td colspan="6">
                         <div class="empty-state-theme">Tidak ada data kelas.</div>
                     </td>
                 </tr>
             `;
-            kelasCountText.textContent = '0';
-            return;
-        }
+                kelasCountText.textContent = '0';
+                return;
+            }
 
-        let html = '';
-        rows.forEach((row, index) => {
-            const wali = row.wali_nama ? escapeHtml(row.wali_nama) : '<span class="text-muted-soft">Belum ditentukan</span>';
-            const pengajarCount = row.jumlah_pengajar || 0;
-            const siswaCount = row.jumlah_siswa || 0;
+            let html = '';
+            rows.forEach((row, index) => {
+                const wali = row.wali_nama ? escapeHtml(row.wali_nama) : '<span class="text-muted-soft">Belum ditentukan</span>';
+                const pengajarCount = row.jumlah_pengajar || 0;
+                const siswaCount = row.jumlah_siswa || 0;
 
-            html += `
+                html += `
                 <tr>
                     <td>${index + 1}</td>
                     <td><strong>${escapeHtml(row.nama_kelas)}</strong></td>
@@ -339,15 +369,15 @@ include '../includes/header.php';
                     </td>
                 </tr>
             `;
-        });
+            });
 
-        kelasTableBody.innerHTML = html;
-        kelasCountText.textContent = rows.length;
-    }
+            kelasTableBody.innerHTML = html;
+            kelasCountText.textContent = rows.length;
+        }
 
-    async function loadKelasTable() {
-        try {
-            kelasTableBody.innerHTML = `
+        async function loadKelasTable() {
+            try {
+                kelasTableBody.innerHTML = `
                 <tr>
                     <td colspan="6">
                         <div class="empty-state-theme">Memuat data kelas...</div>
@@ -355,188 +385,199 @@ include '../includes/header.php';
                 </tr>
             `;
 
-            const q = kelasSearchInput.value.trim();
-            const url = new URL(listUrl, window.location.origin);
-            if (q) {
-                url.searchParams.set('q', q);
-            }
+                const q = kelasSearchInput.value.trim();
+                const url = new URL(listUrl, window.location.origin);
+                if (q) {
+                    url.searchParams.set('q', q);
+                }
 
-            const res = await fetch(url.toString(), { cache: 'no-store' });
-            const data = await res.json();
+                const res = await fetch(url.toString(), {
+                    cache: 'no-store'
+                });
+                const data = await res.json();
 
-            if (!data.success) {
-                throw new Error(data.message || 'Gagal memuat data.');
-            }
+                if (!data.success) {
+                    throw new Error(data.message || 'Gagal memuat data.');
+                }
 
-            kelasRows = data.rows || [];
-            guruOptions = data.guru_options || [];
+                kelasRows = data.rows || [];
+                guruOptions = data.guru_options || [];
 
-            renderStats(data.summary || {});
-            renderTable(kelasRows);
-            renderWaliOptions('');
-        } catch (err) {
-            kelasTableBody.innerHTML = `
+                renderStats(data.summary || {});
+                renderTable(kelasRows);
+                renderWaliOptions('');
+            } catch (err) {
+                kelasTableBody.innerHTML = `
                 <tr>
                     <td colspan="6">
                         <div class="empty-state-theme">Gagal memuat data kelas.</div>
                     </td>
                 </tr>
             `;
-            showAlert(err.message || 'Terjadi kesalahan saat memuat data.', 'error');
-        }
-    }
-
-    function findKelasById(id) {
-        return kelasRows.find(item => String(item.id) === String(id)) || null;
-    }
-
-    window.openTambahKelas = function () {
-        kelasModalTitle.textContent = 'Tambah Kelas';
-        kelasForm.reset();
-        kelasIdInput.value = '';
-        renderWaliOptions('');
-        kelasModal.style.display = 'flex';
-        setTimeout(() => namaKelasInput.focus(), 50);
-    };
-
-    window.openEditKelas = function (id) {
-        const row = findKelasById(id);
-        if (!row) return;
-
-        kelasModalTitle.textContent = 'Edit Kelas';
-        kelasIdInput.value = row.id;
-        namaKelasInput.value = row.nama_kelas || '';
-        renderWaliOptions(row.wali_guru_id || '');
-        kelasModal.style.display = 'flex';
-        setTimeout(() => namaKelasInput.focus(), 50);
-    };
-
-    window.closeKelasModal = function () {
-        kelasModal.style.display = 'none';
-    };
-
-    window.openPengajarModal = function (id) {
-        const row = findKelasById(id);
-        if (!row) return;
-
-        pengajarKelasIdInput.value = row.id;
-        pengajarModalKelasName.textContent = row.nama_kelas || '-';
-        renderGuruChecklist(row.pengajar_ids || [], row.wali_guru_id || '');
-        pengajarModal.style.display = 'flex';
-    };
-
-    window.closePengajarModal = function () {
-        pengajarModal.style.display = 'none';
-    };
-
-    window.deleteKelas = async function (id) {
-        const row = findKelasById(id);
-        if (!row) return;
-
-        const ok = confirm('Hapus kelas "' + row.nama_kelas + '"?');
-        if (!ok) return;
-
-        try {
-            const formData = new FormData();
-            formData.append('action', 'delete_kelas');
-            formData.append('kelas_id', id);
-
-            const res = await fetch(actionUrl, {
-                method: 'POST',
-                body: formData
-            });
-            const data = await res.json();
-
-            if (!data.success) {
-                throw new Error(data.message || 'Gagal menghapus kelas.');
+                showAlert(err.message || 'Terjadi kesalahan saat memuat data.', 'error');
             }
-
-            showAlert(data.message || 'Kelas berhasil dihapus.');
-            loadKelasTable();
-        } catch (err) {
-            showAlert(err.message || 'Terjadi kesalahan saat menghapus kelas.', 'error');
         }
-    };
 
-    kelasForm.addEventListener('submit', async function (e) {
-        e.preventDefault();
+        function findKelasById(id) {
+            return kelasRows.find(item => String(item.id) === String(id)) || null;
+        }
 
-        try {
-            setButtonLoading(kelasSubmitBtn, true);
+        window.openTambahKelas = function() {
+            kelasModalTitle.textContent = 'Tambah Kelas';
+            kelasForm.reset();
+            kelasIdInput.value = '';
+            renderWaliOptions('');
+            kelasModal.style.display = 'flex';
+            hideKelasModalAlert();
+            setTimeout(() => namaKelasInput.focus(), 50);
+        };
 
-            const formData = new FormData(kelasForm);
-            const res = await fetch(actionUrl, {
-                method: 'POST',
-                body: formData
-            });
-            const data = await res.json();
+        window.openEditKelas = function(id) {
+            const row = findKelasById(id);
+            if (!row) return;
 
-            if (!data.success) {
-                throw new Error(data.message || 'Gagal menyimpan kelas.');
+            kelasModalTitle.textContent = 'Edit Kelas';
+            kelasIdInput.value = row.id;
+            namaKelasInput.value = row.nama_kelas || '';
+            renderWaliOptions(row.wali_guru_id || '');
+            kelasModal.style.display = 'flex';
+            hideKelasModalAlert();
+            setTimeout(() => namaKelasInput.focus(), 50);
+        };
+
+        window.closeKelasModal = function() {
+            hideKelasModalAlert();
+            kelasModal.style.display = 'none';
+        };
+
+        window.openPengajarModal = function(id) {
+            const row = findKelasById(id);
+            if (!row) return;
+
+            pengajarKelasIdInput.value = row.id;
+            pengajarModalKelasName.textContent = row.nama_kelas || '-';
+            renderGuruChecklist(row.pengajar_ids || [], row.wali_guru_id || '');
+            pengajarModal.style.display = 'flex';
+            hideKelasModalAlert();
+        };
+
+        window.closePengajarModal = function() {
+            hidePengajarModalAlert();
+            pengajarModal.style.display = 'none';
+        };
+
+        window.deleteKelas = async function(id) {
+            const row = findKelasById(id);
+            if (!row) return;
+
+            const ok = confirm('Hapus kelas "' + row.nama_kelas + '"?');
+            if (!ok) return;
+
+            try {
+                const formData = new FormData();
+                formData.append('action', 'delete_kelas');
+                formData.append('kelas_id', id);
+
+                const res = await fetch(actionUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+
+                if (!data.success) {
+                    throw new Error(data.message || 'Gagal menghapus kelas.');
+                }
+
+                showAlert(data.message || 'Kelas berhasil dihapus.');
+                loadKelasTable();
+            } catch (err) {
+                showAlert(err.message || 'Terjadi kesalahan saat menghapus kelas.', 'error');
             }
+        };
 
-            closeKelasModal();
-            showAlert(data.message || 'Data kelas berhasil disimpan.');
-            loadKelasTable();
-        } catch (err) {
-            showAlert(err.message || 'Terjadi kesalahan saat menyimpan kelas.', 'error');
-        } finally {
-            setButtonLoading(kelasSubmitBtn, false);
-        }
-    });
+        kelasForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
 
-    pengajarForm.addEventListener('submit', async function (e) {
-        e.preventDefault();
+            try {
+                setButtonLoading(kelasSubmitBtn, true);
+                hideKelasModalAlert();
 
-        try {
-            setButtonLoading(pengajarSubmitBtn, true, 'Menyimpan...');
+                const formData = new FormData(kelasForm);
+                const res = await fetch(actionUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
 
-            const formData = new FormData(pengajarForm);
-            const res = await fetch(actionUrl, {
-                method: 'POST',
-                body: formData
-            });
-            const data = await res.json();
+                if (!data.success) {
+                    showAlert(data.message || 'Gagal menyimpan kelas.', 'error', 'modal');
+                    return;
+                }
 
-            if (!data.success) {
-                throw new Error(data.message || 'Gagal menyimpan guru pengajar.');
+                closeKelasModal();
+                showAlert(data.message || 'Data kelas berhasil disimpan.', 'success', 'page');
+                loadKelasTable();
+            } catch (err) {
+                showAlert(err.message || 'Terjadi kesalahan saat menyimpan kelas.', 'error', 'modal');
+            } finally {
+                setButtonLoading(kelasSubmitBtn, false);
             }
+        });
 
-            closePengajarModal();
-            showAlert(data.message || 'Guru pengajar berhasil diperbarui.');
-            loadKelasTable();
-        } catch (err) {
-            showAlert(err.message || 'Terjadi kesalahan saat menyimpan pengajar.', 'error');
-        } finally {
-            setButtonLoading(pengajarSubmitBtn, false);
-        }
-    });
+        pengajarForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
 
-    btnTambahKelas.addEventListener('click', openTambahKelas);
-    btnRefreshKelas.addEventListener('click', loadKelasTable);
+            try {
+                setButtonLoading(pengajarSubmitBtn, true, 'Menyimpan...');
+                hidePengajarModalAlert();
 
-    kelasSearchInput.addEventListener('input', function () {
-        clearTimeout(searchTimer);
-        searchTimer = setTimeout(loadKelasTable, 300);
-    });
+                const formData = new FormData(pengajarForm);
+                const res = await fetch(actionUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
 
-    kelasModal.addEventListener('click', function (e) {
-        if (e.target === kelasModal) closeKelasModal();
-    });
+                if (!data.success) {
+                    showAlert(data.message || 'Gagal menyimpan guru pengajar.', 'error', 'pengajar-modal');
+                    return;
+                }
 
-    pengajarModal.addEventListener('click', function (e) {
-        if (e.target === pengajarModal) closePengajarModal();
-    });
+                closePengajarModal();
+                showAlert(data.message || 'Guru pengajar berhasil diperbarui.', 'success', 'page');
+                loadKelasTable();
+            } catch (err) {
+                showAlert(err.message || 'Terjadi kesalahan saat menyimpan pengajar.', 'error', 'pengajar-modal');
+            } finally {
+                setButtonLoading(pengajarSubmitBtn, false);
+            }
+        });
 
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') {
-            if (kelasModal.style.display === 'flex') closeKelasModal();
-            if (pengajarModal.style.display === 'flex') closePengajarModal();
-        }
-    });
+        btnTambahKelas.addEventListener('click', openTambahKelas);
+        btnRefreshKelas.addEventListener('click', loadKelasTable);
 
-    document.addEventListener('DOMContentLoaded', loadKelasTable);
-})();
+        kelasSearchInput.addEventListener('input', function() {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(loadKelasTable, 300);
+        });
+
+        kelasModal.addEventListener('click', function(e) {
+            if (e.target === kelasModal) closeKelasModal();
+        });
+
+        pengajarModal.addEventListener('click', function(e) {
+            if (e.target === pengajarModal) closePengajarModal();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (kelasModal.style.display === 'flex') closeKelasModal();
+                if (pengajarModal.style.display === 'flex') closePengajarModal();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', loadKelasTable);
+    })();
 </script>
 
 <?php include '../includes/footer.php'; ?>

@@ -135,6 +135,7 @@ include '../includes/header.php';
 
         <h3 class="warn-modal-title" id="siswaModalTitle">Tambah Siswa</h3>
         <p class="warn-modal-body">Isi akun dan biodata siswa.</p>
+        <div id="siswaModalAlert" class="alert-theme" style="display:none; margin-bottom:14px;"></div>
 
         <form id="siswaForm" class="koreksi-form-inner">
             <input type="hidden" name="action" value="save_siswa">
@@ -319,15 +320,29 @@ include '../includes/header.php';
                 .replace(/'/g, '&#039;');
         }
 
-        function showAlert(message, type = 'success') {
-            siswaAlert.style.display = 'block';
-            siswaAlert.className = 'alert-theme ' + (type === 'error' ? 'alert-error-theme' : '');
-            siswaAlert.innerHTML = escapeHtml(message);
+        const siswaModalAlert = document.getElementById('siswaModalAlert');
 
-            clearTimeout(showAlert._timer);
-            showAlert._timer = setTimeout(() => {
-                siswaAlert.style.display = 'none';
-            }, 3000);
+        function showAlert(message, type = 'success', target = 'page') {
+            const el = target === 'modal' ? siswaModalAlert : siswaAlert;
+
+            if (!el) return;
+
+            el.style.display = 'block';
+            el.className = 'alert-theme ' + (type === 'error' ? 'alert-error-theme' : 'alert-success-theme');
+            el.innerHTML = escapeHtml(message);
+
+            clearTimeout(el._timer);
+            el._timer = setTimeout(() => {
+                el.style.display = 'none';
+            }, 3500);
+        }
+
+        function hideModalAlert() {
+            if (siswaModalAlert) {
+                siswaModalAlert.style.display = 'none';
+                siswaModalAlert.innerHTML = '';
+                siswaModalAlert.className = 'alert-theme';
+            }
         }
 
         function setButtonLoading(btn, isLoading, textLoading = 'Menyimpan...') {
@@ -497,6 +512,7 @@ include '../includes/header.php';
             siswaFotoPreview.innerHTML = '<i class="fa-regular fa-user"></i>';
             renderKelasOptions('');
             siswaModal.style.display = 'flex';
+            hideModalAlert();
             setTimeout(() => siswaNamaInput.focus(), 50);
         };
 
@@ -514,6 +530,7 @@ include '../includes/header.php';
             siswaPasswordHint.textContent = '(kosongkan jika tidak diubah)';
             siswaFotoInput.value = '';
             siswaHapusFotoInput.checked = false;
+            hideModalAlert();
 
             if (row.foto) {
                 siswaFotoPreview.innerHTML = `
@@ -539,6 +556,7 @@ include '../includes/header.php';
         };
 
         window.closeSiswaModal = function() {
+            hideModalAlert();
             siswaModal.style.display = 'none';
         };
 
@@ -583,23 +601,26 @@ include '../includes/header.php';
 
             try {
                 setButtonLoading(siswaSubmitBtn, true);
+                hideModalAlert();
 
                 const formData = new FormData(siswaForm);
                 const res = await fetch(actionUrl, {
                     method: 'POST',
                     body: formData
                 });
+
                 const data = await res.json();
 
                 if (!data.success) {
-                    throw new Error(data.message || 'Gagal menyimpan data siswa.');
+                    showAlert(data.message || 'Gagal menyimpan data siswa.', 'error', 'modal');
+                    return;
                 }
 
                 closeSiswaModal();
-                showAlert(data.message || 'Data siswa berhasil disimpan.');
+                showAlert(data.message || 'Data siswa berhasil disimpan.', 'success', 'page');
                 loadSiswaTable();
             } catch (err) {
-                showAlert(err.message || 'Terjadi kesalahan saat menyimpan data siswa.', 'error');
+                showAlert(err.message || 'Terjadi kesalahan saat menyimpan data siswa.', 'error', 'modal');
             } finally {
                 setButtonLoading(siswaSubmitBtn, false);
             }

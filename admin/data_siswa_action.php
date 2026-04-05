@@ -24,7 +24,9 @@ function ensureUploadDir(string $dir): void
 
 function deleteIfExists(?string $filename, string $dir): void
 {
-    if (!$filename) return;
+    if (!$filename) {
+        return;
+    }
 
     $safeName = basename($filename);
     $fullPath = rtrim($dir, '/\\') . DIRECTORY_SEPARATOR . $safeName;
@@ -84,26 +86,28 @@ if ($action === '') {
     jsonResponse(false, 'Action tidak valid.');
 }
 
+$uploadDir = dirname(__DIR__) . '/upload/siswa';
+$uploadedNewPhoto = '';
+$oldPhotoToDelete = null;
+
 try {
     if ($action === 'save_siswa') {
         $siswaId = (int)($_POST['siswa_id'] ?? 0);
 
-        $nama = trim($_POST['nama'] ?? '');
-        $username = trim($_POST['username'] ?? '');
-        $email = trim($_POST['email'] ?? '');
-        $password = (string)($_POST['password'] ?? '');
-        $nis = trim($_POST['nis'] ?? '');
-        $nisn = trim($_POST['nisn'] ?? '');
-        $kelasId = (int)($_POST['kelas_id'] ?? 0);
+        $nama         = trim($_POST['nama'] ?? '');
+        $username     = trim($_POST['username'] ?? '');
+        $email        = trim($_POST['email'] ?? '');
+        $password     = (string)($_POST['password'] ?? '');
+        $nis          = trim($_POST['nis'] ?? '');
+        $nisn         = trim($_POST['nisn'] ?? '');
+        $kelasId      = (int)($_POST['kelas_id'] ?? 0);
         $jenisKelamin = trim($_POST['jenis_kelamin'] ?? '');
-        $alamat = trim($_POST['alamat'] ?? '');
-        $noHpOrtu = trim($_POST['no_hp_ortu'] ?? '');
-        $kodeKartu = trim($_POST['kode_kartu'] ?? '');
-        $statusSiswa = ($_POST['status_siswa'] ?? 'aktif') === 'nonaktif' ? 'nonaktif' : 'aktif';
-        $statusAkun = ($_POST['status_akun'] ?? 'aktif') === 'nonaktif' ? 'nonaktif' : 'aktif';
-
-        $hapusFoto = (int)($_POST['hapus_foto'] ?? 0) === 1;
-        $uploadDir = dirname(__DIR__) . '/upload/siswa';
+        $alamat       = trim($_POST['alamat'] ?? '');
+        $noHpOrtu     = trim($_POST['no_hp_ortu'] ?? '');
+        $kodeKartu    = trim($_POST['kode_kartu'] ?? '');
+        $statusSiswa  = ($_POST['status_siswa'] ?? 'aktif') === 'nonaktif' ? 'nonaktif' : 'aktif';
+        $statusAkun   = ($_POST['status_akun'] ?? 'aktif') === 'nonaktif' ? 'nonaktif' : 'aktif';
+        $hapusFoto    = (int)($_POST['hapus_foto'] ?? 0) === 1;
 
         if ($nama === '' || $username === '' || $nis === '' || $nisn === '' || $kelasId <= 0 || $kodeKartu === '') {
             jsonResponse(false, 'Nama, username, NIS, NISN, kelas, dan kode kartu wajib diisi.');
@@ -117,11 +121,7 @@ try {
             jsonResponse(false, 'Password wajib diisi saat tambah siswa.');
         }
 
-        if ($siswaId <= 0) {
-            $fotoLama = null;
-        }
-
-        /* cek kelas */
+        /* cek kelas valid */
         $stmtKelas = $conn->prepare("SELECT id FROM kelas WHERE id = ? LIMIT 1");
         $stmtKelas->bind_param("i", $kelasId);
         $stmtKelas->execute();
@@ -132,15 +132,15 @@ try {
             jsonResponse(false, 'Kelas tidak valid.');
         }
 
-        /* ambil user_id lama jika edit */
+        /* data lama jika edit */
         $userIdLama = null;
+        $fotoLama = null;
+
         if ($siswaId > 0) {
             $stmtSiswa = $conn->prepare("SELECT user_id, foto FROM siswa WHERE id = ? LIMIT 1");
-            $fotoLama = null;
             $stmtSiswa->bind_param("i", $siswaId);
             $stmtSiswa->execute();
             $siswaLama = $stmtSiswa->get_result()->fetch_assoc();
-            $fotoLama = $siswaLama['foto'] ?? null;
             $stmtSiswa->close();
 
             if (!$siswaLama) {
@@ -148,6 +148,7 @@ try {
             }
 
             $userIdLama = (int)$siswaLama['user_id'];
+            $fotoLama = $siswaLama['foto'] ?? null;
         }
 
         /* username unik */
@@ -166,7 +167,7 @@ try {
             jsonResponse(false, 'Username sudah digunakan.');
         }
 
-        /* email unik */
+        /* email unik jika diisi */
         if ($email !== '') {
             if ($siswaId > 0) {
                 $stmtEmailDup = $conn->prepare("SELECT id FROM users WHERE email = ? AND id <> ? LIMIT 1");
@@ -233,14 +234,16 @@ try {
         if ($dupKode) {
             jsonResponse(false, 'Kode kartu sudah digunakan.');
         }
-        $fotoBaru = '';
 
+        /* upload foto baru jika ada */
         if (!empty($_FILES['foto']) && ($_FILES['foto']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
-            $fotoBaru = uploadSiswaPhoto($_FILES['foto'], $uploadDir, $siswaId);
+            $uploadedNewPhoto = uploadSiswaPhoto($_FILES['foto'], $uploadDir, $siswaId);
         }
+
         $conn->begin_transaction();
 
         if ($siswaId > 0) {
+            /* update users */
             if ($password !== '') {
                 $passwordHash = password_hash($password, PASSWORD_DEFAULT);
 
@@ -261,31 +264,76 @@ try {
             $stmtUser->execute();
             $stmtUser->close();
 
-            if ($fotoBaru !== '') {
+            /* tentukan query update siswa berdasarkan kondisi foto */
+            if ($uploadedNewPhoto !== '') {
                 $stmtSiswaSave = $conn->prepare("
-        UPDATE siswa
-        SET nis = ?, nisn = ?, kelas_id = ?, jenis_kelamin = ?, alamat = ?, no_hp_ortu = ?, foto = ?, kode_kartu = ?, status_siswa = ?
-        WHERE id = ?
-    ");
-                $stmtSiswaSave->bind_param("ssissssssi", $nis, $nisn, $kelasId, $jenisKelamin, $alamat, $noHpOrtu, $fotoBaru, $kodeKartu, $statusSiswa, $siswaId);
+                    UPDATE siswa
+                    SET nis = ?, nisn = ?, kelas_id = ?, jenis_kelamin = ?, alamat = ?, no_hp_ortu = ?, foto = ?, kode_kartu = ?, status_siswa = ?
+                    WHERE id = ?
+                ");
+                $stmtSiswaSave->bind_param(
+                    "ssissssssi",
+                    $nis,
+                    $nisn,
+                    $kelasId,
+                    $jenisKelamin,
+                    $alamat,
+                    $noHpOrtu,
+                    $uploadedNewPhoto,
+                    $kodeKartu,
+                    $statusSiswa,
+                    $siswaId
+                );
+
+                if ($fotoLama) {
+                    $oldPhotoToDelete = $fotoLama;
+                }
             } elseif ($hapusFoto) {
                 $stmtSiswaSave = $conn->prepare("
-        UPDATE siswa
-        SET nis = ?, nisn = ?, kelas_id = ?, jenis_kelamin = ?, alamat = ?, no_hp_ortu = ?, foto = NULL, kode_kartu = ?, status_siswa = ?
-        WHERE id = ?
-    ");
-                $stmtSiswaSave->bind_param("ssisssssi", $nis, $nisn, $kelasId, $jenisKelamin, $alamat, $noHpOrtu, $kodeKartu, $statusSiswa, $siswaId);
+                    UPDATE siswa
+                    SET nis = ?, nisn = ?, kelas_id = ?, jenis_kelamin = ?, alamat = ?, no_hp_ortu = ?, foto = NULL, kode_kartu = ?, status_siswa = ?
+                    WHERE id = ?
+                ");
+                $stmtSiswaSave->bind_param(
+                    "ssisssssi",
+                    $nis,
+                    $nisn,
+                    $kelasId,
+                    $jenisKelamin,
+                    $alamat,
+                    $noHpOrtu,
+                    $kodeKartu,
+                    $statusSiswa,
+                    $siswaId
+                );
+
+                if ($fotoLama) {
+                    $oldPhotoToDelete = $fotoLama;
+                }
             } else {
                 $stmtSiswaSave = $conn->prepare("
-        UPDATE siswa
-        SET nis = ?, nisn = ?, kelas_id = ?, jenis_kelamin = ?, alamat = ?, no_hp_ortu = ?, kode_kartu = ?, status_siswa = ?
-        WHERE id = ?
-    ");
-                $stmtSiswaSave->bind_param("ssisssssi", $nis, $nisn, $kelasId, $jenisKelamin, $alamat, $noHpOrtu, $kodeKartu, $statusSiswa, $siswaId);
+                    UPDATE siswa
+                    SET nis = ?, nisn = ?, kelas_id = ?, jenis_kelamin = ?, alamat = ?, no_hp_ortu = ?, kode_kartu = ?, status_siswa = ?
+                    WHERE id = ?
+                ");
+                $stmtSiswaSave->bind_param(
+                    "ssisssssi",
+                    $nis,
+                    $nisn,
+                    $kelasId,
+                    $jenisKelamin,
+                    $alamat,
+                    $noHpOrtu,
+                    $kodeKartu,
+                    $statusSiswa,
+                    $siswaId
+                );
             }
+
             $stmtSiswaSave->execute();
             $stmtSiswaSave->close();
         } else {
+            /* insert users */
             $passwordHash = password_hash($password, PASSWORD_DEFAULT);
 
             $stmtUser = $conn->prepare("
@@ -297,27 +345,36 @@ try {
             $userIdBaru = $conn->insert_id;
             $stmtUser->close();
 
+            /* insert siswa */
             $stmtSiswaSave = $conn->prepare("
-    INSERT INTO siswa (user_id, nis, nisn, kelas_id, jenis_kelamin, alamat, no_hp_ortu, foto, kode_kartu, status_siswa)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-");
-            $stmtSiswaSave->bind_param("ississssss", $userIdBaru, $nis, $nisn, $kelasId, $jenisKelamin, $alamat, $noHpOrtu, $fotoBaru, $kodeKartu, $statusSiswa);
+                INSERT INTO siswa (user_id, nis, nisn, kelas_id, jenis_kelamin, alamat, no_hp_ortu, foto, kode_kartu, status_siswa)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ");
+            $stmtSiswaSave->bind_param(
+                "ississssss",
+                $userIdBaru,
+                $nis,
+                $nisn,
+                $kelasId,
+                $jenisKelamin,
+                $alamat,
+                $noHpOrtu,
+                $uploadedNewPhoto,
+                $kodeKartu,
+                $statusSiswa
+            );
             $stmtSiswaSave->execute();
             $stmtSiswaSave->close();
         }
 
         $conn->commit();
-        jsonResponse(true, 'Data siswa berhasil disimpan.');
 
-        if ($siswaId > 0) {
-            if ($fotoBaru !== '' && $fotoLama) {
-                deleteIfExists($fotoLama, $uploadDir);
-            }
-
-            if ($hapusFoto && $fotoLama && $fotoBaru === '') {
-                deleteIfExists($fotoLama, $uploadDir);
-            }
+        /* hapus foto lama setelah commit sukses */
+        if ($oldPhotoToDelete) {
+            deleteIfExists($oldPhotoToDelete, $uploadDir);
         }
+
+        jsonResponse(true, 'Data siswa berhasil disimpan.');
     }
 
     if ($action === 'delete_siswa') {
@@ -338,21 +395,23 @@ try {
         }
 
         $userId = (int)$siswa['user_id'];
-        $fotoLama = $siswa['foto'] ?? null;
-        $uploadDir = dirname(__DIR__) . '/upload/siswa';
+        $oldPhotoToDelete = $siswa['foto'] ?? null;
 
         $conn->begin_transaction();
 
+        /* asumsi FK users -> siswa memakai cascade seperti schema project */
         $stmtDeleteUser = $conn->prepare("DELETE FROM users WHERE id = ?");
         $stmtDeleteUser->bind_param("i", $userId);
         $stmtDeleteUser->execute();
         $stmtDeleteUser->close();
 
         $conn->commit();
-        jsonResponse(true, 'Data siswa berhasil dihapus.');
-        if ($fotoLama) {
-            deleteIfExists($fotoLama, $uploadDir);
+
+        if ($oldPhotoToDelete) {
+            deleteIfExists($oldPhotoToDelete, $uploadDir);
         }
+
+        jsonResponse(true, 'Data siswa berhasil dihapus.');
     }
 
     jsonResponse(false, 'Action tidak dikenali.');
@@ -360,6 +419,11 @@ try {
     try {
         $conn->rollback();
     } catch (Throwable $rollbackError) {
+    }
+
+    /* hapus file baru jika sempat terupload tapi proses gagal */
+    if ($uploadedNewPhoto !== '') {
+        deleteIfExists($uploadedNewPhoto, $uploadDir);
     }
 
     jsonResponse(false, 'Terjadi kesalahan: ' . $e->getMessage());
