@@ -3,7 +3,7 @@ require_once '../config/database.php';
 require_once '../includes/functions.php';
 require_once '../includes/auth.php';
 
-require_role(['guru']);
+require_role(['admin']);
 header('Content-Type: application/json');
 
 function tableExists(mysqli $conn, string $table): bool
@@ -22,15 +22,6 @@ function tableExists(mysqli $conn, string $table): bool
     return ((int)($row['total'] ?? 0)) > 0;
 }
 
-$guruId = getGuruId($conn);
-if (!$guruId) {
-    echo json_encode([
-        'success' => false,
-        'message' => 'Data guru tidak ditemukan.'
-    ]);
-    exit;
-}
-
 $tanggal = $_GET['tanggal'] ?? date('Y-m-d');
 if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $tanggal)) {
     $tanggal = date('Y-m-d');
@@ -38,34 +29,20 @@ if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $tanggal)) {
 
 $kelasId = (int)($_GET['kelas_id'] ?? 0);
 
-/* daftar kelas guru */
-$stmtKelas = $conn->prepare("
-    SELECT k.id, k.nama_kelas, gk.role_guru_kelas
-    FROM guru_kelas gk
-    INNER JOIN kelas k ON k.id = gk.kelas_id
-    WHERE gk.guru_id = ?
-    ORDER BY k.nama_kelas ASC
+/* ---------- Ambil semua kelas ---------- */
+$resultKelas = $conn->query("
+    SELECT id, nama_kelas
+    FROM kelas
+    ORDER BY nama_kelas ASC
 ");
-$stmtKelas->bind_param("i", $guruId);
-$stmtKelas->execute();
-$resKelas = $stmtKelas->get_result();
 
 $daftarKelas = [];
-while ($row = $resKelas->fetch_assoc()) {
+while ($row = $resultKelas->fetch_assoc()) {
+    $row['role_guru_kelas'] = 'admin';
     $daftarKelas[] = $row;
-}
-$stmtKelas->close();
-
-if (empty($daftarKelas)) {
-    echo json_encode([
-        'success' => false,
-        'message' => 'Guru belum terhubung ke kelas manapun.'
-    ]);
-    exit;
 }
 
 $kelasIds = array_map('intval', array_column($daftarKelas, 'id'));
-$kelasIdsSql = implode(',', $kelasIds);
 
 if ($kelasId > 0 && !in_array($kelasId, $kelasIds, true)) {
     $kelasId = 0;
@@ -81,8 +58,9 @@ if ($kelasId > 0) {
     }
 }
 
-$whereKelas = $kelasId > 0 ? "s.kelas_id = {$kelasId}" : "s.kelas_id IN ({$kelasIdsSql})";
+$whereKelas = $kelasId > 0 ? "s.kelas_id = {$kelasId}" : "1=1";
 
+/* ---------- Statistik ---------- */
 $totalSiswa = (int)($conn->query("
     SELECT COUNT(*) AS total
     FROM siswa s
@@ -116,7 +94,7 @@ $alpa       = (int)($stats['alpa'] ?? 0);
 $sudahAbsen = (int)($stats['sudah_absen'] ?? 0);
 $belumAbsen = max($totalSiswa - $sudahAbsen, 0);
 
-/* info hari libur opsional */
+/* ---------- Hari libur ---------- */
 $holiday = [
     'isHoliday' => false,
     'label' => '',
@@ -146,7 +124,7 @@ echo json_encode([
     'labelTanggal' => formatTanggalIndonesia($tanggal),
     'kelasId' => $kelasId,
     'labelKelas' => $labelKelas,
-    'description' => 'Ringkasan aktivitas siswa — ' . $labelKelas . ' — ' . formatTanggalIndonesia($tanggal) . '.',
+    'description' => 'Pusat kontrol data absensi sekolah — ' . $labelKelas . ' — ' . formatTanggalIndonesia($tanggal) . '.',
     'daftarKelas' => $daftarKelas,
     'holiday' => $holiday,
     'stats' => [

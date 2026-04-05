@@ -32,11 +32,15 @@ $inisial = strtoupper(substr($nama, 0, 1));
                     <i class="fa-solid fa-house"></i>
                     <span>Dashboard</span>
                 </a>
-                <a href="<?= BASE_URL; ?>/admin/siswa.php" class="<?= menuActive('/admin/siswa.php'); ?>">
+                <a href="<?= BASE_URL; ?>/admin/data_kelas.php" class="<?= menuActive('/admin/kelas.php'); ?>">
+                    <i class="fa-solid fa-school"></i>
+                    <span>Data Kelas</span>
+                </a>
+                <a href="<?= BASE_URL; ?>/admin/data_siswa.php" class="<?= menuActive('/admin/siswa.php'); ?>">
                     <i class="fa-solid fa-user-graduate"></i>
                     <span>Data Siswa</span>
                 </a>
-                <a href="<?= BASE_URL; ?>/admin/guru.php" class="<?= menuActive('/admin/guru.php'); ?>">
+                <a href="<?= BASE_URL; ?>/admin/data_guru.php" class="<?= menuActive('/admin/guru.php'); ?>">
                     <i class="fa-solid fa-chalkboard-user"></i>
                     <span>Data Guru</span>
                 </a>
@@ -44,11 +48,11 @@ $inisial = strtoupper(substr($nama, 0, 1));
                     <i class="fa-solid fa-clipboard-list"></i>
                     <span>Laporan</span>
                 </a>
-                <a href="<?= BASE_URL; ?>/admin/absensi.php" class="<?= menuActive('/admin/absensi.php'); ?>">
+                <a href="<?= BASE_URL; ?>/admin/kelola_absen.php" class="<?= menuActive('/admin/absensi.php'); ?>">
                     <i class="fa-solid fa-calendar-check"></i>
                     <span>Kelola Absen</span>
                 </a>
-                <a href="<?= BASE_URL; ?>/admin/scan.php" class="<?= menuActive('/admin/scan.php'); ?>">
+                <a href="<?= BASE_URL; ?>/admin/scan_absensi.php" class="<?= menuActive('/admin/scan.php'); ?>">
                     <i class="fa-solid fa-qrcode"></i>
                     <span>Scan Absensi</span>
                 </a>

@@ -91,7 +91,7 @@ include '../includes/header.php';
                             <div class="kartu-foto-area">
                                 <div class="kartu-foto">
                                     <?php if (!empty($foto)) : ?>
-                                        <img src="<?= BASE_URL; ?>/assets/img/<?= htmlspecialchars($foto); ?>" alt="Foto Siswa">
+                                        <img src="<?= BASE_URL; ?>/upload/siswa/<?= htmlspecialchars($foto); ?>" alt="Foto Siswa">
                                     <?php else : ?>
                                         <i class="fa-regular fa-user"></i>
                                     <?php endif; ?>

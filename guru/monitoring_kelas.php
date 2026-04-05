@@ -55,6 +55,15 @@ function redirectMonitoringKelas(string $tanggal, int $kelasId, string $statusFi
     header('Location: ' . $url);
     exit;
 }
+function formatMetodeLabel(?string $metode): string
+{
+    return match ($metode) {
+        'scan'   => 'Scan',
+        'manual' => 'Manual',
+        'import' => 'Import',
+        default  => '-',
+    };
+}
 
 /* ---------- Parameter ---------- */
 $kelasId = (int) ($_GET['kelas_id'] ?? 0);
@@ -77,8 +86,6 @@ $hasMetodePulang     = hasTableColumn($conn, 'absensi', 'metode_pulang');
 $hasCorrectedBy      = hasTableColumn($conn, 'absensi', 'corrected_by_user_id');
 $hasCorrectedAt      = hasTableColumn($conn, 'absensi', 'corrected_at');
 $hasAlasanKoreksi    = hasTableColumn($conn, 'absensi', 'alasan_koreksi');
-$hasMetodeAbsen      = hasTableColumn($conn, 'absensi', 'metode_absen');
-$hasScannedBy        = hasTableColumn($conn, 'absensi', 'scanned_by_user_id');
 
 /* ---------- Verifikasi: guru memang mengajar di kelas ini ---------- */
 $stmtRole = $conn->prepare("
@@ -222,21 +229,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'simpa
             $params = [$jamMasukManual, $statusMasuk];
             $types  = "ss";
 
-            if ($hasMetodeMasuk) {
-                $sets[] = "metode_masuk = 'manual'";
-            } elseif ($hasMetodeAbsen) {
-                $sets[] = "metode_absen = 'manual'";
-            }
-
-            if ($hasCorrectedBy) {
-                $sets[] = "corrected_by_user_id = ?";
-                $params[] = $userId;
-                $types .= "i";
-            } elseif ($hasScannedBy) {
-                $sets[] = "scanned_by_user_id = ?";
-                $params[] = $userId;
-                $types .= "i";
-            }
+            $sets[] = "metode_masuk = 'manual'";
+            $sets[] = "corrected_by_user_id = ?";
+            $params[] = $userId;
+            $types .= "i";
 
             if ($hasCorrectedAt) {
                 $sets[] = "corrected_at = NOW()";
@@ -261,25 +257,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'simpa
             $params  = [$siswaId, $tanggalPost, $jamMasukManual, $statusMasuk];
             $types   = "isss";
 
-            if ($hasMetodeMasuk) {
-                $columns[] = "metode_masuk";
-                $values[]  = "'manual'";
-            } elseif ($hasMetodeAbsen) {
-                $columns[] = "metode_absen";
-                $values[]  = "'manual'";
-            }
+            $columns[] = "metode_masuk";
+            $values[]  = "'manual'";
 
-            if ($hasCorrectedBy) {
-                $columns[] = "corrected_by_user_id";
-                $values[]  = "?";
-                $params[]  = $userId;
-                $types    .= "i";
-            } elseif ($hasScannedBy) {
-                $columns[] = "scanned_by_user_id";
-                $values[]  = "?";
-                $params[]  = $userId;
-                $types    .= "i";
-            }
+            $columns[] = "corrected_by_user_id";
+            $values[]  = "?";
+            $params[]  = $userId;
+            $types    .= "i";
 
             if ($hasCorrectedAt) {
                 $columns[] = "corrected_at";
@@ -315,26 +299,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'simpa
             ];
             $params = [$statusNonHadir];
             $types  = "s";
+            $sets[] = "metode_masuk = 'manual'";
+            $sets[] = "metode_pulang = NULL";
 
-            if ($hasMetodeMasuk) {
-                $sets[] = "metode_masuk = 'manual'";
-            } elseif ($hasMetodeAbsen) {
-                $sets[] = "metode_absen = 'manual'";
-            }
-
-            if ($hasMetodePulang) {
-                $sets[] = "metode_pulang = NULL";
-            }
-
-            if ($hasCorrectedBy) {
-                $sets[] = "corrected_by_user_id = ?";
-                $params[] = $userId;
-                $types .= "i";
-            } elseif ($hasScannedBy) {
-                $sets[] = "scanned_by_user_id = ?";
-                $params[] = $userId;
-                $types .= "i";
-            }
+            $sets[] = "corrected_by_user_id = ?";
+            $params[] = $userId;
+            $types .= "i";
 
             if ($hasCorrectedAt) {
                 $sets[] = "corrected_at = NOW()";
@@ -359,25 +329,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'simpa
             $params  = [$siswaId, $tanggalPost, $statusNonHadir];
             $types   = "iss";
 
-            if ($hasMetodeMasuk) {
-                $columns[] = "metode_masuk";
-                $values[]  = "'manual'";
-            } elseif ($hasMetodeAbsen) {
-                $columns[] = "metode_absen";
-                $values[]  = "'manual'";
-            }
+            $columns[] = "metode_masuk";
+            $values[]  = "'manual'";
 
-            if ($hasCorrectedBy) {
-                $columns[] = "corrected_by_user_id";
-                $values[]  = "?";
-                $params[]  = $userId;
-                $types    .= "i";
-            } elseif ($hasScannedBy) {
-                $columns[] = "scanned_by_user_id";
-                $values[]  = "?";
-                $params[]  = $userId;
-                $types    .= "i";
-            }
+            $columns[] = "corrected_by_user_id";
+            $values[]  = "?";
+            $params[]  = $userId;
+            $types    .= "i";
 
             if ($hasCorrectedAt) {
                 $columns[] = "corrected_at";
@@ -415,21 +373,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'simpa
         $params = [$jamPulangManual];
         $types  = "s";
 
-        if ($hasMetodePulang) {
-            $sets[] = "metode_pulang = 'manual'";
-        } elseif ($hasMetodeAbsen) {
-            $sets[] = "metode_absen = 'manual'";
-        }
+        $sets[] = "metode_pulang = 'manual'";
 
-        if ($hasCorrectedBy) {
-            $sets[] = "corrected_by_user_id = ?";
-            $params[] = $userId;
-            $types .= "i";
-        } elseif ($hasScannedBy) {
-            $sets[] = "scanned_by_user_id = ?";
-            $params[] = $userId;
-            $types .= "i";
-        }
+        $sets[] = "corrected_by_user_id = ?";
+        $params[] = $userId;
+        $types .= "i";
 
         if ($hasCorrectedAt) {
             $sets[] = "corrected_at = NOW()";
@@ -747,8 +695,8 @@ include '../includes/header.php';
                                                         data-masuk="<?= !empty($row['jam_masuk']) ? substr($row['jam_masuk'], 0, 5) : '-'; ?>"
                                                         data-pulang="<?= !empty($row['jam_pulang']) ? substr($row['jam_pulang'], 0, 5) : '-'; ?>"
                                                         data-status="<?= htmlspecialchars($row['status_saat_ini'], ENT_QUOTES); ?>"
-                                                        data-metode-masuk="<?= htmlspecialchars($row['metode_masuk'] ?? '-', ENT_QUOTES); ?>"
-                                                        data-metode-pulang="<?= htmlspecialchars($row['metode_pulang'] ?? '-', ENT_QUOTES); ?>"
+                                                        data-metode-masuk="<?= htmlspecialchars(formatMetodeLabel($row['metode_masuk'] ?? null), ENT_QUOTES); ?>"
+                                                        data-metode-pulang="<?= htmlspecialchars(formatMetodeLabel($row['metode_pulang'] ?? null), ENT_QUOTES); ?>"
                                                         data-scan-masuk="<?= htmlspecialchars($row['scanned_masuk_by_name'] ?? '-', ENT_QUOTES); ?>"
                                                         data-scan-pulang="<?= htmlspecialchars($row['scanned_pulang_by_name'] ?? '-', ENT_QUOTES); ?>"
                                                         data-corrected-by="<?= htmlspecialchars($row['corrected_by_name'] ?? '-', ENT_QUOTES); ?>"
@@ -974,50 +922,50 @@ include '../includes/header.php';
 </script>
 
 <script>
-const riwayatModal = document.getElementById('riwayatModal');
-const rmNamaSiswa = document.getElementById('rmNamaSiswa');
-const rmMasuk = document.getElementById('rmMasuk');
-const rmPulang = document.getElementById('rmPulang');
-const rmStatus = document.getElementById('rmStatus');
-const rmMetodeMasuk = document.getElementById('rmMetodeMasuk');
-const rmMetodePulang = document.getElementById('rmMetodePulang');
-const rmScanMasuk = document.getElementById('rmScanMasuk');
-const rmScanPulang = document.getElementById('rmScanPulang');
-const rmCorrectedBy = document.getElementById('rmCorrectedBy');
-const rmCorrectedAt = document.getElementById('rmCorrectedAt');
-const rmAlasan = document.getElementById('rmAlasan');
+    const riwayatModal = document.getElementById('riwayatModal');
+    const rmNamaSiswa = document.getElementById('rmNamaSiswa');
+    const rmMasuk = document.getElementById('rmMasuk');
+    const rmPulang = document.getElementById('rmPulang');
+    const rmStatus = document.getElementById('rmStatus');
+    const rmMetodeMasuk = document.getElementById('rmMetodeMasuk');
+    const rmMetodePulang = document.getElementById('rmMetodePulang');
+    const rmScanMasuk = document.getElementById('rmScanMasuk');
+    const rmScanPulang = document.getElementById('rmScanPulang');
+    const rmCorrectedBy = document.getElementById('rmCorrectedBy');
+    const rmCorrectedAt = document.getElementById('rmCorrectedAt');
+    const rmAlasan = document.getElementById('rmAlasan');
 
-window.openRiwayatModal = function(btn) {
-    rmNamaSiswa.textContent = btn.dataset.nama || '-';
-    rmMasuk.textContent = btn.dataset.masuk || '-';
-    rmPulang.textContent = btn.dataset.pulang || '-';
-    rmStatus.textContent = btn.dataset.status || '-';
-    rmMetodeMasuk.textContent = btn.dataset.metodeMasuk || '-';
-    rmMetodePulang.textContent = btn.dataset.metodePulang || '-';
-    rmScanMasuk.textContent = btn.dataset.scanMasuk || '-';
-    rmScanPulang.textContent = btn.dataset.scanPulang || '-';
-    rmCorrectedBy.textContent = btn.dataset.correctedBy || '-';
-    rmCorrectedAt.textContent = btn.dataset.correctedAt || '-';
-    rmAlasan.textContent = btn.dataset.alasan || '-';
+    window.openRiwayatModal = function(btn) {
+        rmNamaSiswa.textContent = btn.dataset.nama || '-';
+        rmMasuk.textContent = btn.dataset.masuk || '-';
+        rmPulang.textContent = btn.dataset.pulang || '-';
+        rmStatus.textContent = btn.dataset.status || '-';
+        rmMetodeMasuk.textContent = btn.dataset.metodeMasuk || '-';
+        rmMetodePulang.textContent = btn.dataset.metodePulang || '-';
+        rmScanMasuk.textContent = btn.dataset.scanMasuk || '-';
+        rmScanPulang.textContent = btn.dataset.scanPulang || '-';
+        rmCorrectedBy.textContent = btn.dataset.correctedBy || '-';
+        rmCorrectedAt.textContent = btn.dataset.correctedAt || '-';
+        rmAlasan.textContent = btn.dataset.alasan || '-';
 
-    riwayatModal.style.display = 'flex';
-};
+        riwayatModal.style.display = 'flex';
+    };
 
-window.closeRiwayatModal = function() {
-    riwayatModal.style.display = 'none';
-};
+    window.closeRiwayatModal = function() {
+        riwayatModal.style.display = 'none';
+    };
 
-riwayatModal.addEventListener('click', function(e) {
-    if (e.target === riwayatModal) {
-        closeRiwayatModal();
-    }
-});
+    riwayatModal.addEventListener('click', function(e) {
+        if (e.target === riwayatModal) {
+            closeRiwayatModal();
+        }
+    });
 
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && riwayatModal.style.display === 'flex') {
-        closeRiwayatModal();
-    }
-});
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && riwayatModal.style.display === 'flex') {
+            closeRiwayatModal();
+        }
+    });
 </script>
 
 <?php include '../includes/footer.php'; ?>

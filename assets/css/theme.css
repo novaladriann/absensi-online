@@ -3581,3 +3581,362 @@ canvas#guruChart {
     line-height:1.45;
   }
 }
+/* ===== ADMIN ===== */
+.admin-kelola-grid{
+  display:grid;
+  grid-template-columns:360px 1fr;
+  gap:20px;
+  align-items:start;
+}
+
+.admin-card-head{
+  margin-bottom:18px;
+}
+
+.admin-jadwal-form{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+
+.admin-form-group{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.admin-jadwal-section{
+  background:#fafbff;
+  border:1px solid #eceef5;
+  border-radius:18px;
+  padding:16px;
+}
+
+.admin-jadwal-section h4{
+  margin:0 0 14px;
+  font-size:15px;
+  font-weight:800;
+}
+
+.admin-jadwal-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+
+.admin-libur-form{
+  display:grid;
+  grid-template-columns:180px 1fr auto;
+  gap:12px;
+  margin-bottom:18px;
+}
+
+.admin-libur-btn{
+  min-width:120px;
+}
+
+.quick-menu a.quick-item{
+  color:inherit;
+}
+
+@media (max-width: 1200px){
+  .admin-kelola-grid{
+    grid-template-columns:1fr;
+  }
+}
+
+@media (max-width: 768px){
+  .admin-jadwal-grid{
+    grid-template-columns:1fr;
+  }
+
+  .admin-libur-form{
+    grid-template-columns:1fr;
+  }
+
+  .admin-libur-btn{
+    width:100%;
+  }
+}
+
+.dashboard-holiday-banner{
+  margin-bottom:18px;
+  background:#fff0d5;
+  color:#b06b00;
+}
+
+.dashboard-holiday-banner strong{
+  color:inherit;
+}
+
+.data-kelas-stats{
+  margin-bottom:22px;
+}
+
+.btn-kelas-aksi{
+  padding:8px 12px;
+  font-size:12px;
+  white-space:nowrap;
+}
+
+.btn-danger-soft{
+  color:#b42318;
+}
+
+.kelas-guru-checklist{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  max-height:320px;
+  overflow:auto;
+  padding-right:4px;
+}
+
+.kelas-guru-item{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  padding:12px 14px;
+  border:1px solid #e8ebf3;
+  border-radius:14px;
+  background:#fafbff;
+  cursor:pointer;
+}
+
+.kelas-guru-main{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+}
+
+.kelas-guru-main input[type="checkbox"]{
+  margin-top:3px;
+}
+
+.kelas-guru-name{
+  font-weight:700;
+  color:#1f2430;
+}
+
+.kelas-guru-sub{
+  font-size:12px;
+  color:#7f879c;
+  margin-top:2px;
+}
+
+.kelas-guru-note{
+  font-size:12px;
+  color:#b06b00;
+  padding-left:26px;
+}
+
+@media (max-width: 768px){
+  .data-kelas-stats{
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 576px){
+  .data-kelas-stats{
+    grid-template-columns:1fr;
+  }
+}
+
+.data-guru-stats{
+  margin-bottom:22px;
+}
+
+.guru-modal-box{
+  max-width:760px;
+}
+
+.guru-form-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+
+.guru-form-full{
+  grid-column:1 / -1;
+}
+
+.kelas-role-wrap{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  align-items:flex-start;
+}
+
+.kelas-role-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:700;
+}
+
+.kelas-role-wali{
+  background:#fff5d9;
+  color:#b06b00;
+}
+
+.kelas-role-pengajar{
+  background:#eef3ff;
+  color:#3556d5;
+}
+
+@media (max-width: 768px){
+  .data-guru-stats{
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+  }
+
+  .guru-form-grid{
+    grid-template-columns:1fr;
+  }
+}
+
+@media (max-width: 576px){
+  .data-guru-stats{
+    grid-template-columns:1fr;
+  }
+}
+
+.data-siswa-stats{
+  margin-bottom:22px;
+}
+
+.siswa-modal-box{
+  max-width:860px;
+}
+
+.siswa-form-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+
+.siswa-form-full{
+  grid-column:1 / -1;
+}
+
+.kode-kartu-wrap{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:10px;
+}
+
+.btn-kode-generate{
+  white-space:nowrap;
+  min-width:140px;
+}
+
+.siswa-kartu-code{
+  display:inline-block;
+  padding:6px 10px;
+  border-radius:10px;
+  background:#f6f8fc;
+  border:1px solid #e6ebf5;
+  color:#334155;
+  font-size:12px;
+}
+
+@media (max-width: 768px){
+  .data-siswa-stats{
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+  }
+
+  .siswa-form-grid{
+    grid-template-columns:1fr;
+  }
+
+  .kode-kartu-wrap{
+    grid-template-columns:1fr;
+  }
+
+  .btn-kode-generate{
+    width:100%;
+  }
+}
+
+@media (max-width: 576px){
+  .data-siswa-stats{
+    grid-template-columns:1fr;
+  }
+}
+
+.siswa-foto-upload-wrap{
+  display:grid;
+  grid-template-columns:110px 1fr;
+  gap:14px;
+  align-items:start;
+}
+
+.siswa-foto-preview{
+  width:110px;
+  height:140px;
+  border-radius:18px;
+  background:#f6f8fc;
+  border:1px solid #e6ebf5;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  font-size:34px;
+  color:#9aa1b5;
+}
+
+.siswa-foto-preview-img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.siswa-foto-actions{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.siswa-foto-remove{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:13px;
+  color:#586074;
+}
+
+@media (max-width: 768px){
+  .siswa-foto-upload-wrap{
+    grid-template-columns:1fr;
+  }
+
+  .siswa-foto-preview{
+    width:100px;
+    height:128px;
+  }
+}
+
+.laporan-filter-grid{
+  display:grid;
+  grid-template-columns:repeat(4, minmax(0, 1fr));
+  gap:14px;
+  align-items:end;
+}
+
+.laporan-stats{
+  margin-bottom:22px;
+}
+
+@media (max-width: 992px){
+  .laporan-filter-grid{
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 576px){
+  .laporan-filter-grid{
+    grid-template-columns:1fr;
+  }
+}

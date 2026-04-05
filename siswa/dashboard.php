@@ -146,7 +146,7 @@ include '../includes/header.php';
                         <div class="profile-avatar">
                             <?php if (!empty($foto)) : ?>
                                 <img
-                                    src="<?= BASE_URL; ?>/assets/img/<?= htmlspecialchars($foto); ?>"
+                                    src="<?= BASE_URL; ?>/upload/siswa/<?= htmlspecialchars($foto); ?>"
                                     alt="Foto Siswa"
                                     class="profile-avatar-img">
                             <?php else : ?>
