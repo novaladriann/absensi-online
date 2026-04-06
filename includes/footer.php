@@ -58,5 +58,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
+<?php include_once __DIR__ . '/loading.php'; ?>
 </body>
 </html>
