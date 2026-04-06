@@ -211,7 +211,7 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
 
             <div class="login-badges">
-                <div class="login-badge">v2.0.1</div>
+                <div class="login-badge">v1.0.0</div>
                 <div class="login-badge">Secure Login</div>
             </div>
         </div>
