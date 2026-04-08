@@ -109,3 +109,108 @@ absensi-online/
 ├── index.php             # Redirect dashboard berdasarkan role
 ├── login.php             # Halaman login
 └── logout.php            # Logout session
+```
+---
+
+## ⚙️ Instalasi
+
+1. Clone repository
+git clone https://github.com/novaladriann/absensi-online.git
+2. Pindahkan ke folder server lokal,
+Contoh untuk XAMPP:
+```bash
+C:/xampp/htdocs/absensi-online
+```
+3. Buat database
+
+Buka phpMyAdmin, lalu buat database baru dengan nama:
+```sql
+absensi_online
+```
+4. Import database
+
+Import file berikut ke database yang telah dibuat:
+```bash
+/database/absensi_online.sql
+```
+5. Atur koneksi database
+
+Sesuaikan konfigurasi database pada file yang digunakan project Anda.
+
+Contoh konfigurasi:
+```php
+$host = 'localhost';
+$user = 'root';
+$pass = '';
+$db   = 'absensi_online';
+```
+6. Jalankan server
+
+Aktifkan:
+
+- Apache
+- MySQL
+7. Akses aplikasi
+
+Buka browser dan jalankan:
+```bash
+http://localhost/absensi-online/login.php
+```
+---
+
+# 🔄 Alur Sistem
+
+1. Pengguna login sesuai role
+2. Sistem mengarahkan user ke dashboard masing-masing
+3. Siswa menampilkan kartu digital berisi QR Code
+4. Guru atau Admin melakukan scan QR siswa
+5. Sistem memproses absensi masuk atau pulang
+6. Data kehadiran tersimpan dan dapat direkap dalam laporan
+---
+
+# 🔒 Fitur Keamanan
+
+Session-based authentication
+Role-based access control
+Password verification
+CAPTCHA pada login
+Pembatasan percobaan login
+Validasi akun aktif saat autentikasi
+
+---
+# 📤 Export Laporan
+
+Sistem mendukung export laporan absensi ke beberapa format:
+
+- 📄 XLS
+- 📄 CSV
+
+Fitur ini memudahkan proses dokumentasi dan rekap kehadiran siswa.
+
+---
+# 📌 Pengembangan Selanjutnya
+
+Beberapa peningkatan yang bisa ditambahkan:
+
+-  Notifikasi keterlambatan atau ketidakhadiran
+- ⚙️ Dukungan file .env
+- 📲 Integrasi API / WhatsApp notification
+- 🛡️ Peningkatan keamanan untuk deployment production
+- ✅ Unit testing dan validasi yang lebih komprehensif
+---
+# 🤝 Kontribusi
+
+Kontribusi, saran, dan masukan sangat terbuka untuk pengembangan project ini.
+
+Silakan:
+
+1. Fork repository ini
+2. Buat branch baru
+3. Lakukan perubahan
+4. Ajukan pull request
+---
+# 👨‍💻 Author
+
+**Noval Adrian**
+
+GitHub: @novaladriann
