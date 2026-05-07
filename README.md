@@ -209,8 +209,6 @@ Silakan:
 3. Lakukan perubahan
 4. Ajukan pull request
 ---
-# Link Penjelasan/Demo Aplikasi
-``` [Tonton video di YouTube](https://youtu.be/YFhiFdaTtgM)
 
 ```
 # 👨‍💻 Author
