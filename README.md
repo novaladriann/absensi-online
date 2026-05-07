@@ -210,7 +210,7 @@ Silakan:
 4. Ajukan pull request
 ---
 # Link Penjelasan/Demo Aplikasi
-``` [Tonton video di YouTube]([https://youtube.com](https://youtu.be/YFhiFdaTtgM))
+``` [Tonton video di YouTube](https://youtu.be/YFhiFdaTtgM)
 
 ```
 # 👨‍💻 Author
