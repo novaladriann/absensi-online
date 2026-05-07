@@ -211,7 +211,6 @@ Silakan:
 ---
 # Link Penjelasan/Demo Aplikasi
 ``` https://youtu.be/YFhiFdaTtgM
----
 ```
 # 👨‍💻 Author
 
